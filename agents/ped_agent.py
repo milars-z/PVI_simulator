@@ -55,7 +55,11 @@ class PedestrianAgent(BaseAgent):
         return self
 
     def _init_basic_para(self, world) -> None:
-        ped_spawn_config = world.get_ped_spawn_config(self.ped_id)
+        ped_spawn_config = world.get_ped_init_config()
+        # "spawn_x"
+        # "spawn_y"
+        # "random_radius" 暂时未使用
+        # "orientation"
 
         self.spawn_x = ped_spawn_config["spawn_x"]
         self.spawn_y = ped_spawn_config["spawn_y"]
