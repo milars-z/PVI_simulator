@@ -22,6 +22,13 @@ class PedStage(Enum):
     DANGEROUS = "dangerous"
     FINISH = "finish"
 
+class VehStage(Enum):
+    INIT = "init"
+    RUN = "run"
+    YIELD = "yield"
+    STOP = "stop"
+    FINISH = "finish"
+
 
 ORIENTATION_ANGLE = {
     Orientation.RIGHT: 0.0,
