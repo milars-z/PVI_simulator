@@ -48,6 +48,9 @@ class VehicleAgent(BaseAgent):
         self.max_deceleration = 0.0
         self.max_acceleration = 0.0
 
+        # 车辆停止点
+        self.stop_x = 0.0
+
         self.stage = VehStage.INIT
 
     def init_veh(self, world: Any) -> "VehicleAgent":
@@ -101,6 +104,8 @@ class VehicleAgent(BaseAgent):
 
         self.pos_x = self.spawn_x
         self.pos_y = self.spawn_y
+
+        self.stop_x = veh_cross_x
 
         self.orientation = orientation
 
