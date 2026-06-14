@@ -36,7 +36,7 @@ WORLD_CONFIG = {
     "ped_spawn": {
         "cross_road_id": 0, # 行人生成的道路id
         "bias_x": 1.0, # 行人生成推荐点位x，相较于道路bottom的偏置值，一般设计为1/2的道路宽度
-        "bias_y": 7.0, # 行人生成推荐点位y，相较于道路bottom的偏置值，代表行人从6m - 4m(道路宽度)外的地方生成
+        "bias_y": 6.0, # 行人生成推荐点位y，相较于道路bottom的偏置值，代表行人从6m - 4m(道路宽度)外的地方生成
         "random_radius": 0.0, # 行人随机生成设计，暂时将行人生成点设计为固定点
         "orientation": Orientation.UP, #行人行走方向
     },

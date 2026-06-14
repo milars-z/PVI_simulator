@@ -327,7 +327,7 @@ class PedestrianObservation:
         pedestrian_time = self._calculate_time_to_conflict_point(
             current_pos=ped.pos_y,
             conflict_pos=conflict_y,
-            speed=ped.speed,
+            speed=ped.ped_speed,
             orientation=ped.orientation,
         )
 

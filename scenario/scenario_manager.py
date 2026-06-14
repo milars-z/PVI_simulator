@@ -132,6 +132,8 @@ class ScenarioManager:
 
         self.seed = self._build_round_seed()
 
+        self.world.clear_agents()
+
     def _has_next_round(self) -> bool:
         return self.current_epoch < self.total_epoch
 
@@ -141,12 +143,13 @@ class ScenarioManager:
 
         所有 ped 和所有 veh 都 finish，当前 round 结束。
         """
-
+        flag = True
+        
         for agent in self.world.agent_list:
-            if agent.is_finished() != True:
-                return False
-            
-        return True
+
+            flag = flag * (agent.is_finished() == True)
+
+        return flag
 
 
     def _build_round_seed(self) -> int:
