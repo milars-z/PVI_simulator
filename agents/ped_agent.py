@@ -37,6 +37,9 @@ class PedestrianAgent(BaseAgent):
         self.ped_speed = 0.0
         self.wait_time = 0.0
 
+        self.wait_line = 0.0
+        self.finish_line = 0.0
+
         self.acc_ttc_gap = None
         self.acc_stop_ratio = None
         self.acc_speed = None
@@ -60,9 +63,13 @@ class PedestrianAgent(BaseAgent):
         # "spawn_y"
         # "random_radius" 暂时未使用
         # "orientation"
+        # "wait_line"
+        # "finish_line"
 
         self.spawn_x = ped_spawn_config["spawn_x"]
         self.spawn_y = ped_spawn_config["spawn_y"]
+        self.wait_line = ped_spawn_config["wait_line"]  #等待坐标，由world配置
+        self.finish_line = ped_spawn_config["finish_line"]  #结束坐标，由world配置
 
         self.pos_x = self.spawn_x
         self.pos_y = self.spawn_y

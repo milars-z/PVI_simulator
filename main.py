@@ -4,14 +4,24 @@ from pathlib import Path
 
 from agents.ped_agent import PedestrianAgent
 from agents.veh_agent import VehicleAgent
-from records.ped_record import save_ped_agents_to_csv
 from world.world import World
 from render.render import Render
 
+import csv
+from pathlib import Path
+
+# from observations.observation import AgentObservation
+from observations.ped_observation import PedestrianObservation
+from observations.veh_observation import VehicleObservation
+
+from controllers.controller_manager import ControllerManager
+from controllers.pedestrian_controller import PedestrianController
+from controllers.vehicle_controller import VehicleController
+
+# from records.record import Record
+# from configs.record_config import RecordLogType
+
 import pygame
-
-
-OUTPUT_PATH = Path("outputs/generated_ped_agents.csv")
 
 PED_NUM = 100
 SEED = 42
@@ -51,10 +61,23 @@ def generate_veh_agents(
 
 def main() -> None:
     world = World()
+    # record = Record()
+    # record.record_logs(RecordLogType.PED_INFORMATION)
+    # record.record_logs(RecordLogType.PED_OBSERVATION)
+
+
+    controller = ControllerManager()
+
 
     ped_agents = generate_ped_agents(
         world=world,
         ped_num=1,
+        seed=SEED,
+    )
+
+    ped_agents_2 = generate_ped_agents(
+        world=world,
+        ped_num=2,
         seed=SEED,
     )
 
@@ -64,25 +87,47 @@ def main() -> None:
         seed=SEED,
     )
 
+    veh_agents_2 = generate_veh_agents(
+        world=world,
+        veh_num=2,
+        seed=SEED,
+    )
+
 
     world.register_ped(ped_agents)
+    world.register_ped(ped_agents_2)
     world.register_veh(veh_agents)
+    world.register_veh(veh_agents_2)
 
-    print(f"agent_list count: {len(world.agent_list)}")
+    ped_observer = PedestrianObservation()
+    veh_observer = VehicleObservation()
 
     render = Render(world)
 
     running = True
     clock = pygame.time.Clock()
-    dt=clock.get_time() / 1000.0
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        ped_agents.update(dt=dt)
-        veh_agents.update(dt=dt)
+        dt=clock.get_time() / 1000.0
+
+        ped_obs_list = ped_observer.update(world)
+        veh_obs_list = veh_observer.update(world)
+
+        observations = {
+            "pedestrian": ped_obs_list,
+            "vehicle": veh_obs_list,
+        }
+
+        controller.update(
+            dt=dt,
+            world=world,
+            observations=observations,
+        )
+
 
         render.render_update()
         
