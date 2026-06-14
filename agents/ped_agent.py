@@ -153,3 +153,6 @@ class PedestrianAgent(BaseAgent):
 
         elif self.stage == PedStage.FINISH:
             pass
+
+    def is_finished(self) -> bool:
+        return self.stage == PedStage.FINISH

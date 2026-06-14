@@ -15,8 +15,8 @@ from observations.ped_observation import PedestrianObservation
 from observations.veh_observation import VehicleObservation
 
 from controllers.controller_manager import ControllerManager
-from controllers.pedestrian_controller import PedestrianController
-from controllers.vehicle_controller import VehicleController
+
+from scenario.scenario_manager import ScenarioManager
 
 # from records.record import Record
 # from configs.record_config import RecordLogType
@@ -27,37 +27,6 @@ PED_NUM = 100
 SEED = 42
 
 
-def generate_ped_agents(
-    world: World,
-    ped_num: int,
-    seed: int,
-) -> PedestrianAgent:
-
-    for ped_id in range(ped_num):
-        ped = PedestrianAgent(
-            ped_id=ped_id,
-            seed=seed,
-        )
-
-        ped.init_ped(world)
-
-    return ped
-
-def generate_veh_agents(
-    world: World,
-    veh_num: int,
-    seed: int,
-) -> VehicleAgent:
-
-    for veh_id in range(veh_num):
-        veh = VehicleAgent(
-            veh_id=veh_id,
-            seed=seed,
-        )
-
-        veh.init_veh(world)
-
-    return veh
 
 def main() -> None:
     world = World()
@@ -65,39 +34,9 @@ def main() -> None:
     # record.record_logs(RecordLogType.PED_INFORMATION)
     # record.record_logs(RecordLogType.PED_OBSERVATION)
 
-
     controller = ControllerManager()
 
-
-    ped_agents = generate_ped_agents(
-        world=world,
-        ped_num=1,
-        seed=SEED,
-    )
-
-    ped_agents_2 = generate_ped_agents(
-        world=world,
-        ped_num=2,
-        seed=SEED,
-    )
-
-    veh_agents = generate_veh_agents(
-        world=world,
-        veh_num=1,
-        seed=SEED,
-    )
-
-    veh_agents_2 = generate_veh_agents(
-        world=world,
-        veh_num=2,
-        seed=SEED,
-    )
-
-
-    world.register_ped(ped_agents)
-    world.register_ped(ped_agents_2)
-    world.register_veh(veh_agents)
-    world.register_veh(veh_agents_2)
+    scenario_manager = ScenarioManager(world)
 
     ped_observer = PedestrianObservation()
     veh_observer = VehicleObservation()
@@ -114,6 +53,11 @@ def main() -> None:
 
         dt=clock.get_time() / 1000.0
 
+        scenario_manager.update()
+
+        if scenario_manager.is_finished():
+            break
+
         ped_obs_list = ped_observer.update(world)
         veh_obs_list = veh_observer.update(world)
 
@@ -127,7 +71,6 @@ def main() -> None:
             world=world,
             observations=observations,
         )
-
 
         render.render_update()
         

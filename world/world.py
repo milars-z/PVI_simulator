@@ -49,6 +49,23 @@ class World:
     def register_veh(self, veh_agent: Any) -> None:
         self.agent_list.append(veh_agent)
 
+    def get_ped_list(self) -> list[PedestrianAgent]:
+        ped_list = []
+        for agents in self.agent_list:
+            if agents.type == AgentType.PEDESTRIAN:
+                ped_list.append(agents)
+        return ped_list
+    
+    def get_veh_list(self) -> list[VehicleAgent]:
+        veh_list = []
+        for agents in self.agent_list:
+            if agents.type == AgentType.VEHICLE:
+                veh_list.append(agents)
+        return veh_list
+    
+    def clear_agents(self) -> None:
+        self.agent_list.clear()
+
 
     def _get_lane_by_id(self, lane_id: int) -> dict:
         for lane in self.lane_list:

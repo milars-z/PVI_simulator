@@ -62,7 +62,11 @@ class VehicleController:
         """
         车辆逻辑控制部分
         """
-        pass
+
+        if veh.pos_x >= 70:
+            veh.stage = VehStage.FINISH
+
+
 
     def _update_motion(
         self,

@@ -179,4 +179,8 @@ class VehicleAgent(BaseAgent):
             self.jerk = 0.0
 
         elif self.stage == VehStage.FINISH:
-            pass
+            self.speed = 0.0
+            super().update(dt)
+    
+    def is_finished(self) -> bool:
+        return self.stage == VehStage.FINISH
