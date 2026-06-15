@@ -25,8 +25,8 @@ class PedStage(Enum):
 class VehStage(Enum):
     INIT = "init"
     RUN = "run"
-    YIELD = "yield"
-    STOP = "stop"
+    INTERACTIVE = "interactive"
+    RECOVER = "recover"
     FINISH = "finish"
 
 

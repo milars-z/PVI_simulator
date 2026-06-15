@@ -61,12 +61,44 @@ class VehicleController:
     ) -> None:
         """
         车辆逻辑控制部分
+        这一块为车辆控制核心
+        目的为根据现有的车辆情况，以及车辆观测到的行人情况来选择性价比最高的决策
+        决策为离散的主决策与连续的微调模块组成
+        离散主要为几个状态
+        分别为：匀速行驶，满减速，稳停减速，急停，速度恢复
+        目的是让PVI交互尽量不会影响车辆的速度，在保证速度和效率和交互体验的情况下选取最优的解答
+
+        self.jerk 
+        self.target_acceleration 
+        self.acceleration
         """
 
-        if veh.pos_x >= 70:
-            veh.stage = VehStage.FINISH
+        # 暂时只处理第一个行人
+        if veh_obs.has_pedestrian == True:
+            obs = veh_obs.observed_pedestrians[0]
+        else:
+            veh.state = VehStage.FINISH
+        
+        if veh.stage == VehStage.INIT:
+            veh.stage = VehStage.RUN
 
+        if veh.stage == VehStage.RUN:
+            
+            self._handle_run_stage(dt, veh, obs)
 
+        elif veh.stage == VehStage.INTERACTIVE:
+            self._handle_interactive_stage(dt, veh, obs)
+
+        elif veh.state == VehStage.RECOVER:
+            self._handle_recover_stage(dt, veh, obs)
+
+        elif veh.state == VehStage.FINISH:
+            self._handle_finish_stage(dt, veh, obs)
+
+        else:
+            raise ValueError(f"Unknown vehicle state: {veh.state}")
+
+          
 
     def _update_motion(
         self,
@@ -78,11 +110,46 @@ class VehicleController:
         根据jerk和一些内部限制更新speed
         """
 
-        
+        target_acc = veh.target_acceleration
+        current_acc = veh.acceleration
+
+
+        max_delta_acc = abs(veh.jerk) * dt
+        acc_error = target_acc - current_acc
+
+        if abs(acc_error) <= max_delta_acc:
+            veh.acceleration = target_acc
+        elif acc_error > 0.0:
+            veh.acceleration += max_delta_acc
+        else:
+            veh.acceleration -= max_delta_acc
+
+
+        veh.speed += veh.acceleration * dt
+
+        # 车辆不能倒退
+        if veh.speed < 0.0:
+            veh.speed = 0.0
+            veh.acceleration = 0.0
+            veh.target_acceleration = 0.0
+
         veh.update(dt) #运动实现，仅依赖speed
-        # veh.speed += veh.acceleration * dt
 
-        # if veh.speed < 0.0:
-        #     veh.speed = 0.0
 
-        # veh.pos_x += veh.speed * dt
+    def _handle_run_stage(self,dt, veh, veh_obs):
+        veh.stage == VehStage.INTERACTIVE
+
+
+    def _handle_interactive_stage(self,dt, veh, veh_obs):
+
+        # 重新写一个类
+        veh.stage == VehStage.RECOVER
+
+    def _handle_recover_stage(self,dt, veh, veh_obs):
+        veh.stage == VehStage.FINISH
+
+    def _handle_finish_stage(self,dt, veh, veh_obs):
+        pass
+
+
+

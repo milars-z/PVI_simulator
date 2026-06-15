@@ -159,28 +159,8 @@ class VehicleAgent(BaseAgent):
             self.jerk = 0.0
 
     def update(self, dt: float) -> None:
-        if self.stage == VehStage.INIT:
-            super().update(dt)
-
-        elif self.stage == VehStage.RUN:
-            self.set_target_acceleration(0.0)
-            self._update_acceleration_with_jerk_limit(dt)
-            self._update_speed(dt)
-            super().update(dt)
-
-        elif self.stage == VehStage.YIELD:
-            self._update_acceleration_with_jerk_limit(dt)
-            self._update_speed(dt)
-            super().update(dt)
-
-        elif self.stage == VehStage.STOP:
-            self.speed = 0.0
-            self.acceleration = 0.0
-            self.jerk = 0.0
-
-        elif self.stage == VehStage.FINISH:
-            self.speed = 0.0
-            super().update(dt)
+        # print(self.speed)
+        super().update(dt)
     
     def is_finished(self) -> bool:
         return self.stage == VehStage.FINISH
