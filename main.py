@@ -18,8 +18,7 @@ from controllers.controller_manager import ControllerManager
 
 from scenario.scenario_manager import ScenarioManager
 
-# from records.record import Record
-# from configs.record_config import RecordLogType
+from records.recorder import Recorder
 
 import pygame
 
@@ -30,9 +29,7 @@ SEED = 42
 
 def main() -> None:
     world = World()
-    # record = Record()
-    # record.record_logs(RecordLogType.PED_INFORMATION)
-    # record.record_logs(RecordLogType.PED_OBSERVATION)
+    recorder = Recorder()
 
     controller = ControllerManager()
 
@@ -73,6 +70,8 @@ def main() -> None:
         )
 
         render.render_update()
+
+        recorder.record(world)
         
         clock.tick(60)
 

@@ -18,6 +18,9 @@ class World:
 
         self.agent_list: list[Any] = []
 
+        self.now_round = 0
+        self.now_epoch = 0
+
 
     def get_ped_init_config(self) -> dict:
         lane = self._get_lane_by_id(self.veh_spawn["lane_id"])

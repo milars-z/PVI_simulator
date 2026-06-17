@@ -92,11 +92,12 @@ class VehicleController:
         elif veh.state == VehStage.RECOVER:
             self._handle_recover_stage(dt, veh, obs)
 
-        elif veh.state == VehStage.FINISH:
+        elif veh.stage == VehStage.FINISH:
+            
             self._handle_finish_stage(dt, veh, obs)
 
         else:
-            raise ValueError(f"Unknown vehicle state: {veh.state}")
+            raise ValueError(f"Unknown vehicle state: {veh.stage}")
 
           
 
@@ -137,18 +138,19 @@ class VehicleController:
 
 
     def _handle_run_stage(self,dt, veh, veh_obs):
-        veh.stage == VehStage.INTERACTIVE
+        veh.stage = VehStage.INTERACTIVE
 
 
     def _handle_interactive_stage(self,dt, veh, veh_obs):
 
         # 重新写一个类
-        veh.stage == VehStage.RECOVER
+        veh.stage = VehStage.RECOVER
 
     def _handle_recover_stage(self,dt, veh, veh_obs):
-        veh.stage == VehStage.FINISH
+        veh.stage = VehStage.FINISH
 
     def _handle_finish_stage(self,dt, veh, veh_obs):
+        veh.speed = 0.0
         pass
 
 

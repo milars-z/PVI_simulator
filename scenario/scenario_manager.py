@@ -66,12 +66,13 @@ class ScenarioManager:
             self.state = ScenarioState.RUNNING
             return
 
-        if self.state == ScenarioState.RUNNING:
+        elif self.state == ScenarioState.RUNNING:
             if self._is_current_round_finished():
                 self.state = ScenarioState.ROUND_FINISHED
+                
             return
 
-        if self.state == ScenarioState.ROUND_FINISHED:
+        elif self.state == ScenarioState.ROUND_FINISHED:
             self._finish_current_round()
 
             if self._has_next_round():
@@ -80,10 +81,13 @@ class ScenarioManager:
             else:
                 self.state = ScenarioState.ALL_FINISHED
 
-            return
+        elif self.state == ScenarioState.ALL_FINISHED:
+            pass
 
-        if self.state == ScenarioState.ALL_FINISHED:
-            return
+        self.world.now_round = self.current_round
+        self.world.now_round = self.current_epoch
+
+        return
 
     def is_finished(self) -> bool:
         return self.state == ScenarioState.ALL_FINISHED

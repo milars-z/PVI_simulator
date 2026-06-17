@@ -23,7 +23,7 @@ class PedestrianAgent(BaseAgent):
             spawn_y=0.0,
             size_x=0.0,
             size_y=0.0,
-            speed=0.0,
+            speed=0.0, # 行人的实际速度，会因为状态而改变
             orientation=Orientation.UP,
         )
 
@@ -34,7 +34,7 @@ class PedestrianAgent(BaseAgent):
         self.ped_type = ""
         self.chara_index = 0
 
-        self.ped_speed = 0.0
+        self.ped_speed = 0.0 # 行人的特征速度，不会因为状态而改变
         self.wait_time = 0.0
 
         self.wait_line = 0.0
@@ -143,6 +143,7 @@ class PedestrianAgent(BaseAgent):
             super().update(dt)
 
         elif self.stage == PedStage.WAIT:
+            print("wait")
             self.wait_time += dt
 
         elif self.stage == PedStage.CROSS:
