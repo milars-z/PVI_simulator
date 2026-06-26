@@ -143,7 +143,6 @@ class PedestrianAgent(BaseAgent):
             super().update(dt)
 
         elif self.stage == PedStage.WAIT:
-            print("wait")
             self.wait_time += dt
 
         elif self.stage == PedStage.CROSS:

@@ -7,6 +7,8 @@ from typing import Optional
 
 from agents.agent_enums import AgentType
 
+import math
+
 
 @dataclass
 class ObservedPedestrianResult:
@@ -24,6 +26,12 @@ class ObservedPedestrianResult:
     cross_probability: float
     focus_probability: float
     is_pass: float
+
+    is_collision: bool
+
+    dis_to_ped_x: float
+
+    dis_to_ped : float
 
 
 @dataclass
@@ -116,6 +124,9 @@ class VehicleObservation:
 
         for ped in ped_list:
             observed_ped = self._build_observed_pedestrian_result(ped)
+            observed_ped.is_collision = self._is_collision(veh,ped)
+            observed_ped.dis_to_ped_x = self._calculate_dis_to_ped_x(veh,ped)
+            observed_ped.dis_to_ped   = self._get_distance_between_vehicle_and_ped(veh,ped)
 
             result.observed_pedestrians.append(observed_ped)
             result.pedestrian_ids.append(ped.ped_id)
@@ -151,4 +162,70 @@ class VehicleObservation:
             cross_probability=ped.cross_probability,
             focus_probability=ped.focus_probability,
             is_pass=ped.is_pass,
+            is_collision = False,
+            dis_to_ped_x = 0.0,
+            dis_to_ped = 0.0,
         )
+    
+
+    def _is_collision(self, veh, ped) -> bool:
+        """
+        中心点 + size_x / size_y 的 AABB 碰撞检测。
+        """
+
+        veh_left = veh.pos_x - veh.size_x / 2.0
+        veh_right = veh.pos_x + veh.size_x / 2.0
+        veh_bottom = veh.pos_y - veh.size_y / 2.0
+        veh_top = veh.pos_y + veh.size_y / 2.0
+
+        ped_left = ped.pos_x - ped.size_x / 2.0
+        ped_right = ped.pos_x + ped.size_x / 2.0
+        ped_bottom = ped.pos_y - ped.size_y / 2.0
+        ped_top = ped.pos_y + ped.size_y / 2.0
+
+        overlap_x = veh_left <= ped_right and veh_right >= ped_left
+        overlap_y = veh_bottom <= ped_top and veh_top >= ped_bottom
+
+        return overlap_x and overlap_y
+    
+
+    def _calculate_dis_to_ped_x(self,veh,ped) -> float:
+
+        return float(ped.pos_x - veh.pos_x)
+    
+    def _get_distance_between_vehicle_and_ped(
+        self,
+        veh,
+        ped,
+    ) -> float:
+        """
+        计算车辆和行人 AABB 边界之间的最短直线距离。
+        """
+
+        veh_left = veh.pos_x - veh.size_x / 2.0
+        veh_right = veh.pos_x + veh.size_x / 2.0
+        veh_bottom = veh.pos_y - veh.size_y / 2.0
+        veh_top = veh.pos_y + veh.size_y / 2.0
+
+        ped_left = ped.pos_x - ped.size_x / 2.0
+        ped_right = ped.pos_x + ped.size_x / 2.0
+        ped_bottom = ped.pos_y - ped.size_y / 2.0
+        ped_top = ped.pos_y + ped.size_y / 2.0
+
+        # x 方向的间距
+        if veh_right < ped_left:
+            dx = ped_left - veh_right
+        elif ped_right < veh_left:
+            dx = veh_left - ped_right
+        else:
+            dx = 0.0
+
+        # y 方向的间距
+        if veh_top < ped_bottom:
+            dy = ped_bottom - veh_top
+        elif ped_top < veh_bottom:
+            dy = veh_bottom - ped_top
+        else:
+            dy = 0.0
+
+        return math.sqrt(dx * dx + dy * dy)

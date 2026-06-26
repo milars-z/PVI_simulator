@@ -69,6 +69,7 @@ class ScenarioManager:
         elif self.state == ScenarioState.RUNNING:
             if self._is_current_round_finished():
                 self.state = ScenarioState.ROUND_FINISHED
+                self.world.mark_round_finished()
                 
             return
 
@@ -84,9 +85,6 @@ class ScenarioManager:
         elif self.state == ScenarioState.ALL_FINISHED:
             pass
 
-        self.world.now_round = self.current_round
-        self.world.now_round = self.current_epoch
-
         return
 
     def is_finished(self) -> bool:
@@ -97,6 +95,22 @@ class ScenarioManager:
 
     def get_current_round(self) -> int:
         return self.current_round
+
+    @property
+    def current_epoch(self) -> int:
+        return self.world.now_epoch
+
+    @current_epoch.setter
+    def current_epoch(self, value: int) -> None:
+        self.world.now_epoch = value
+
+    @property
+    def current_round(self) -> int:
+        return self.world.now_round
+
+    @current_round.setter
+    def current_round(self, value: int) -> None:
+        self.world.now_round = value
 
     def get_current_seed(self) -> int:
        
@@ -109,6 +123,12 @@ class ScenarioManager:
         2. 生成本轮 veh
         3. 注册到 world
         """
+
+        self.world.set_round_progress(
+            epoch_id=self.current_epoch,
+            round_id=self.current_round,
+        )
+        self.world.mark_round_running()
 
         ped_agents = self._generate_ped_agents(self.seed)
         veh_agents = self._generate_veh_agents(self.seed)

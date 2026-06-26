@@ -12,21 +12,7 @@ from records.recorder_fun import RecorderFun
 
 class Recorder:
     """
-    Recorder 的职责：
-
-    1. 每一帧 record(world, epoch_id, round_id)
-       - 更新碰撞
-       - 更新最小距离
-       - 更新最小距离时车辆速度
-       - 记录车辆第一次到达人行道时是否礼让
-
-    2. 每个 round 结束时 finish_round(world, epoch_id, round_id)
-       - 写入一行 CSV
-
-    注意：
-    - 一行 CSV = 一个 round
-    - 不是一个 epoch
-    - epoch 只是外层训练循环
+    pygame画面渲染
     """
 
     def __init__(self) -> None:
@@ -82,17 +68,21 @@ class Recorder:
 
         self._update_running_metrics(veh, ped)
 
+        if self._is_round_finished(world):
+            self._write_round_result(veh)
+
     def finish_round(
         self,
         world: Any,
-        epoch_id: int,
-        round_id: int,
     ) -> None:
         """
         每个 round 结束时，由外部显式调用一次。
 
         这个函数负责写入一行 CSV。
         """
+
+        round_id = world.now_round
+        epoch_id = world.now_epoch
 
         veh = self.fun.get_main_vehicle(world)
         ped = self.fun.get_main_pedestrian(world)
@@ -125,6 +115,12 @@ class Recorder:
             or self.current_round_id != round_id
         )
 
+    def _is_round_finished(self, world: Any) -> bool:
+        if not hasattr(world, "is_round_finished"):
+            return False
+
+        return world.is_round_finished()
+
     def _start_round(
         self,
         veh: Any,
@@ -143,8 +139,7 @@ class Recorder:
             "round_id": round_id,
 
             "veh_id": veh.veh_id,
-            "veh_spawn_x": veh.spawn_x,
-            "veh_spawn_y": veh.spawn_y,
+            "veh_spawn_x": veh.distance_to_crossroad_m,
             "veh_init_speed": veh.init_speed_mps,
 
             "ped_id": ped.ped_id,

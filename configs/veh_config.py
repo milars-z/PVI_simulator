@@ -28,37 +28,37 @@ VEH_COMBO_CONFIG = {
         
         # dis = 50.0
         {
-            "combo_name": "d50_v60",
+            "combo_name": "d50_v60", #16.67
             "distance_to_crossroad_m": 50.0,
             "init_speed_kmh": 60.0,
         },
         {
-            "combo_name": "d50_v55",
+            "combo_name": "d50_v55", #15.27
             "distance_to_crossroad_m": 50.0,
             "init_speed_kmh": 55.0,
         },
         {
-            "combo_name": "d50_v50",
+            "combo_name": "d50_v50", #13.88
             "distance_to_crossroad_m": 50.0,
             "init_speed_kmh": 50.0,
         },
         {
-            "combo_name": "d50_v45",
+            "combo_name": "d50_v45", #12.5
             "distance_to_crossroad_m": 50.0,
             "init_speed_kmh": 45.0,
         },
         {
-            "combo_name": "d50_v40",
+            "combo_name": "d50_v40", #11.11
             "distance_to_crossroad_m": 50.0,
             "init_speed_kmh": 40.0,
         },
         {
-            "combo_name": "d50_v35",
+            "combo_name": "d50_v35", #9.72
             "distance_to_crossroad_m": 50.0,
             "init_speed_kmh": 35.0,
         },
         {
-            "combo_name": "d50_v30",
+            "combo_name": "d50_v30", #8.33
             "distance_to_crossroad_m": 50.0,
             "init_speed_kmh": 30.0,
         },
@@ -210,8 +210,5 @@ VEH_COMBO_CONFIG = {
             "distance_to_crossroad_m": 30.0,
             "init_speed_kmh": 30.0,
         },
-
-        
-       
     ],
 }

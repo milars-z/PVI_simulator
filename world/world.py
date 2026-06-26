@@ -18,8 +18,22 @@ class World:
 
         self.agent_list: list[Any] = []
 
-        self.now_round = 0
         self.now_epoch = 0
+        self.now_round = 0
+        self.round_finished = False
+
+    def set_round_progress(self, epoch_id: int, round_id: int) -> None:
+        self.now_epoch = epoch_id
+        self.now_round = round_id
+
+    def mark_round_running(self) -> None:
+        self.round_finished = False
+
+    def mark_round_finished(self) -> None:
+        self.round_finished = True
+
+    def is_round_finished(self) -> bool:
+        return self.round_finished
 
 
     def get_ped_init_config(self) -> dict:

@@ -219,3 +219,6 @@ __marimo__/
 
 #venv
 /ven_PVI/
+
+#codex
+.codex

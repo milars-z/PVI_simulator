@@ -153,14 +153,15 @@ class VehicleAgent(BaseAgent):
     def _update_speed(self, dt: float) -> None:
         self.speed += self.acceleration * dt
 
-        if self.speed < 0.0:
+        if self.speed <= 0.0:
             self.speed = 0.0
             self.acceleration = 0.0
             self.jerk = 0.0
 
     def update(self, dt: float) -> None:
         # print(self.speed)
-        super().update(dt)
+        if self.stage != VehStage.FINISH:
+            super().update(dt)
     
     def is_finished(self) -> bool:
         return self.stage == VehStage.FINISH

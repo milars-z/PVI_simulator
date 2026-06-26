@@ -8,11 +8,11 @@ PED_BASIC_CONFIG = {
 
     "type_list": [
         "aggressive_ttc",
-        "aggressive_stopping_ratio",
-        "caution_stopping",
-        "less_interactive",
-        "less_attention",
-        "less_cross",
+        # "aggressive_stopping_ratio",
+        # "caution_stopping",
+        # "less_interactive",
+        # "less_attention",
+        # "less_cross",
     ],
 }
 
@@ -44,53 +44,53 @@ PED_TYPE_CHARA_CONFIG = {
         },
     },
 
-    "aggressive_stopping_ratio": {
-        "params": {
-            "acc_stop_ratio": {
-                "values": [0.9, 1.0, 1.1],
-                "noise_std": 0.03,
-            },
-            "ped_speed": {
-                "values": [0.85,1.3,1.5],
-                "noise_std": 0.05,
-            },
-        },
-    },
+    # "aggressive_stopping_ratio": {
+    #     "params": {
+    #         "acc_stop_ratio": {
+    #             "values": [0.9, 1.0, 1.1],
+    #             "noise_std": 0.03,
+    #         },
+    #         "ped_speed": {
+    #             "values": [0.85,1.3,1.5],
+    #             "noise_std": 0.05,
+    #         },
+    #     },
+    # },
 
-    "caution_stopping": {
-        "params": {
-            "acc_speed": {
-                "values": [0.3, 0.5, 0.8],
-                "noise_std": 0.05,
-            },
-            "ped_speed": {
-                "values": [0.85,1.3,1.5],
-                "noise_std": 0.05,
-            },
-        },
-    },
+    # "caution_stopping": {
+    #     "params": {
+    #         "acc_speed": {
+    #             "values": [0.3, 0.5, 0.8],
+    #             "noise_std": 0.05,
+    #         },
+    #         "ped_speed": {
+    #             "values": [0.85,1.3,1.5],
+    #             "noise_std": 0.05,
+    #         },
+    #     },
+    # },
 
-    "less_interactive": {
-        "params": {
-            "ped_speed": {
-                "values": [0.85,1.3,1.5],
-                "noise_std": 0.05,
-            },
-        },
-    },
+    # "less_interactive": {
+    #     "params": {
+    #         "ped_speed": {
+    #             "values": [0.85,1.3,1.5],
+    #             "noise_std": 0.05,
+    #         },
+    #     },
+    # },
 
-    "less_attention": {
-        "params": {
-            "ped_speed": {
-                "values": [0.85,1.3,1.5],
-                "noise_std": 0.05,
-            },
-        },
-    },
+    # "less_attention": {
+    #     "params": {
+    #         "ped_speed": {
+    #             "values": [0.85,1.3,1.5],
+    #             "noise_std": 0.05,
+    #         },
+    #     },
+    # },
 
-    "less_cross": {
-        "params": {
-            ## none
-        },
-    },
+    # "less_cross": {
+    #     "params": {
+    #         ## none
+    #     },
+    # },
 }
