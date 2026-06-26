@@ -54,7 +54,7 @@ class VehicleStateDiscretizer:
 
             discrete_state.append(discrete_value)
 
-        self._write_discrete_state(discrete_state)
+        # self._write_discrete_state(discrete_state)
 
         return discrete_state
 

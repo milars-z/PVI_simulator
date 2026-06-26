@@ -17,6 +17,7 @@ RECORDER_CONFIG = {
         "ped_id",
         "ped_type",
         "ped_speed",
+        "ped_ttc",
 
         "is_collision",
         "min_distance",

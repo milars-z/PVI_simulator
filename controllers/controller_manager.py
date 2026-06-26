@@ -56,3 +56,6 @@ class ControllerManager:
             veh_list=veh_list,
             veh_obs_list=veh_obs_list,
         )
+
+    def save_q_table(self):
+        self.vehicle.save_q_table()

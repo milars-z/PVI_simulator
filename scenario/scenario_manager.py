@@ -209,7 +209,7 @@ class ScenarioManager:
             "[Scenario] "
             f"epoch={self.current_epoch}, "
             f"round={self.current_round}, "
-            f"seed={seed}, "
-            f"ped={self.next_id}, "
-            f"veh={self.next_id}"
+            f"seed={seed} "
+            # f"ped={self.next_id}, "
+            # f"veh={self.next_id}"
         )

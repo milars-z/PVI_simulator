@@ -11,6 +11,8 @@ from interaction.vehicle_cost import VehicleCostCalculator
 from interaction.PVI_controller import PCF
 from interaction.action_config import JERK_ACTION_LIST
 
+from configs.pvi_config import  PVI_CONFIG
+
 from observations.veh_observation import ObservedPedestrianResult
 from agents.veh_agent import VehicleAgent
 
@@ -28,6 +30,8 @@ class VehicleController:
             dis = self.dis,
             calculator = self.calculator,
             actions = JERK_ACTION_LIST,
+            q_table_path = PVI_CONFIG["q_table_path"],
+            train = PVI_CONFIG["train_mode"],
         )
 
     def update(
@@ -42,6 +46,7 @@ class VehicleController:
             veh_obs = obs_map.get(veh.veh_id)
 
             if veh_obs is None:
+                print("warning!! no observation")
                 self._update_without_observation(dt, veh)
             else:
                 self._update_with_observation(dt, veh, veh_obs)
@@ -142,29 +147,6 @@ class VehicleController:
         veh.acceleration = target_acc
         veh.speed = target_speed
 
-        # target_acc = veh.target_acceleration
-        # current_acc = veh.acceleration
-
-
-        # max_delta_acc = abs(veh.jerk) * dt
-        # acc_error = target_acc - current_acc
-
-        # if abs(acc_error) <= max_delta_acc:
-        #     veh.acceleration = target_acc
-        # elif acc_error > 0.0:
-        #     veh.acceleration += max_delta_acc
-        # else:
-        #     veh.acceleration -= max_delta_acc
-
-
-        # veh.speed += veh.acceleration * dt
-
-        # # 车辆不能倒退
-        # if veh.speed < 0.0:
-        #     veh.speed = 0.0
-        #     veh.acceleration = 0.0
-        #     veh.target_acceleration = 0.0
-
         veh.update(dt) #运动实现，仅依赖speed
 
 
@@ -174,9 +156,6 @@ class VehicleController:
 
     def _handle_interactive_stage(self,dt, veh, veh_obs):
 
-        # self.dis.discretize(veh_obs = veh_obs,veh = veh)
-        # total_cost = self.calculator.calculate(veh,veh_obs)
-        # print(total_cost)
         action = self.controller.get_action(
             veh = veh,
             veh_obs = veh_obs,
@@ -184,17 +163,23 @@ class VehicleController:
             k = 5,
         )
         veh.jerk = action.jerk
-        print(veh.jerk)
-        # veh.jerk = -4.0
+        
         if veh.pos_x >= 70:
             veh.stage = VehStage.FINISH
 
-    # def _handle_recover_stage(self,dt, veh, veh_obs):
-    #     if veh.pos_x >= 70:
-    #         veh.stage = VehStage.FINISH
+        elif veh.speed == 0 :
+            veh.stage = VehStage.RECOVER
+
+    def _handle_recover_stage(self,dt, veh, veh_obs):
+        veh.jerk = 4.0
+        if veh.pos_x >= 70:
+            veh.stage = VehStage.FINISH
 
     def _handle_finish_stage(self,dt, veh, veh_obs):
         pass
+
+    def save_q_table(self):
+        self.controller.save_q_table()
 
 
 

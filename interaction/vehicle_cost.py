@@ -230,9 +230,8 @@ class VehicleCostCalculator:
         """
 
         veh_speed = veh.speed
+        distance_to_stoppoint = veh.stop_x - veh.pos_x ##距离推荐停车点的距离
 
-
-        distance_to_stoppoint = veh.pos_x - veh.stop_x
 
         low_speed_threshold = self.config["low_speed_threshold_mps"]
         early_stop_distance = self.config["early_stop_distance_m"]

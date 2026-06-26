@@ -43,9 +43,11 @@ propagate_monotonic_cost(now_state,min_future_cost) -- 更新所有表格,情况
 from __future__ import annotations
 
 import copy
+import json
 import math
 import random
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from observations.veh_observation import ObservedPedestrianResult
@@ -103,6 +105,7 @@ class PCF:
         epsilon: float = 0.2,
         init_cost: float = 0.0,
         train: bool = True,
+        q_table_path: str | Path | None = None,
     ) -> None:
         """
         参数:
@@ -146,6 +149,7 @@ class PCF:
         self.epsilon = epsilon
         self.init_cost = init_cost
         self.train = train
+        self.q_table_path = Path(q_table_path) if q_table_path is not None else None
 
         # Q-table:
         #
@@ -159,6 +163,7 @@ class PCF:
         # action_id 是 jerk action 的 id
         # cost 是该 state-action 对应的估计代价
         self.q_table: dict[tuple[int, ...], dict[int, float]] = {}
+        self.training_steps = 0
 
         # 预留给 P 模块，当前版本暂不使用
         self.p_error: float = 0.0
@@ -167,6 +172,13 @@ class PCF:
         # 后续做 P 的时候可以用:
         #     P_error = get_P(now_state, last_future_state)
         self.last_future_state: tuple[int, ...] | None = None
+
+        if self.q_table_path is not None:
+            self.load_q_table(self.q_table_path)
+
+        #记录本轮变更的值
+        self.change_value = 0.0
+
 
     # ==================================================
     # 外部唯一接口
@@ -210,8 +222,6 @@ class PCF:
             8. update_q_table(now_state, action, current_cost, min_future_cost)
             9. 返回 action
 
-        注意:
-            预测函数内部会 deepcopy，不会修改真实 veh / veh_obs。
         """
 
         # 1. 当前状态离散化
@@ -699,11 +709,115 @@ class PCF:
             target_cost - old_cost
         )
 
+        change = abs(new_cost - old_cost)
+
         self.q_table[now_state][action.action_id] = new_cost
+        
+        self.change_value += change 
 
     # ==================================================
     # 7. 单调 cost 传播，暂时留接口
     # ==================================================
+
+    def load_q_table(
+        self,
+        path: str | Path | None = None,
+    ) -> None:
+        """
+        Load Q-table values from JSON.
+
+        Runtime:
+            self.q_table[state_tuple][action_id] = cost
+
+        JSON:
+            {
+                "state": [..],
+                "costs": {
+                    "0": 1.2,
+                    "1": 0.8
+                }
+            }
+        """
+
+        q_table_path = Path(path) if path is not None else self.q_table_path
+
+        if q_table_path is None or not q_table_path.exists():
+            return
+
+        with q_table_path.open("r", encoding="utf-8") as file:
+            payload = json.load(file)
+
+        rows = payload.get("q_table", [])
+        loaded_table: dict[tuple[int, ...], dict[int, float]] = {}
+
+        for row in rows:
+            raw_state = row.get("state", [])
+            saved_costs = row.get("costs", {})
+
+            try:
+                state = tuple(int(value) for value in raw_state)
+            except (TypeError, ValueError):
+                continue
+
+            if not state:
+                continue
+
+            action_costs: dict[int, float] = {}
+
+            for action in self.actions:
+                raw_cost = saved_costs.get(
+                    str(action.action_id),
+                    self.init_cost,
+                )
+
+                try:
+                    action_costs[action.action_id] = float(raw_cost)
+                except (TypeError, ValueError):
+                    action_costs[action.action_id] = float(self.init_cost)
+
+            loaded_table[state] = action_costs
+
+        self.q_table = loaded_table
+        # self.training_steps = int(payload.get("training_steps", 0))
+
+    def save_q_table(
+        self,
+        path: str | Path | None = None,
+    ) -> None:
+        """
+        Save Q-table values to JSON so the next training run can continue.
+        """
+
+        q_table_path = Path(path) if path is not None else self.q_table_path
+
+        if q_table_path is None:
+            return
+
+        q_table_path.parent.mkdir(parents=True, exist_ok=True)
+
+        payload = {
+            "state_count": len(self.q_table),
+            "q_table": [
+                {
+                    "state": list(state),
+                    "costs": {
+                        str(action_id): float(cost)
+                        for action_id, cost in sorted(costs.items())
+                    },
+                }
+                for state, costs in sorted(self.q_table.items())
+            ],
+        }
+
+        with q_table_path.open("w", encoding="utf-8") as file:
+            json.dump(
+                payload,
+                file,
+                ensure_ascii=False,
+                indent=2,
+            )
+
+        print("loss:", self.change_value)
 
     def propagate_monotonic_cost(
         self,

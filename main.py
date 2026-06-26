@@ -1,82 +1,20 @@
 # main.py
 
-from pathlib import Path
+from running_mode import run_with_render,run_training
 
-from agents.ped_agent import PedestrianAgent
-from agents.veh_agent import VehicleAgent
-from world.world import World
-from render.render import Render
+# PED_NUM = 100
+# SEED = 42
 
-import csv
-from pathlib import Path
-
-# from observations.observation import AgentObservation
-from observations.ped_observation import PedestrianObservation
-from observations.veh_observation import VehicleObservation
-
-from controllers.controller_manager import ControllerManager
-
-from scenario.scenario_manager import ScenarioManager
-
-from records.recorder import Recorder
-
-import pygame
-
-PED_NUM = 100
-SEED = 42
-
-
+RUN_MODE = "train"
+#RUN_MODE = "render"
 
 def main() -> None:
-    world = World()
-    recorder = Recorder()
-
-    controller = ControllerManager()
-
-    scenario_manager = ScenarioManager(world)
-
-    ped_observer = PedestrianObservation()
-    veh_observer = VehicleObservation()
-
-    render = Render(world)
-
-    running = True
-    clock = pygame.time.Clock()
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        dt=clock.get_time() / 1000.0
-
-        scenario_manager.update()
-
-        if scenario_manager.is_finished():
-            break
-
-        ped_obs_list = ped_observer.update(world)
-        veh_obs_list = veh_observer.update(world)
-
-        observations = {
-            "pedestrian": ped_obs_list,
-            "vehicle": veh_obs_list,
-        }
-
-        controller.update(
-            dt=dt,
-            world=world,
-            observations=observations,
-        )
-
-        render.render_update()
-
-        recorder.record(world)
-        
-        clock.tick(60)
-
-    pygame.quit()
-
+    if RUN_MODE == "render":
+        run_with_render()
+    elif RUN_MODE == "train":
+        run_training()
+    else:
+        raise ValueError(f"Unknown RUN_MODE: {RUN_MODE}")
 
 if __name__ == "__main__":
     main()

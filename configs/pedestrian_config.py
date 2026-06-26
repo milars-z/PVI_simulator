@@ -34,11 +34,11 @@ PED_TYPE_CHARA_CONFIG = {
     "aggressive_ttc": {
         "params": {
             "acc_ttc_gap": {
-                "values": [0.5, 1.5, 3.0],
+                "values": [0.5, 1.2, 1.5 ,2.0, 3.0 ],
                 "noise_std": 0.2,
             },
             "ped_speed": {
-                "values": [0.85,1.3,1.5],
+                "values": [0.85,1.3,1.5,2.0],
                 "noise_std": 0.05,
             },
         },

@@ -145,6 +145,7 @@ class Recorder:
             "ped_id": ped.ped_id,
             "ped_type": ped.ped_type,
             "ped_speed": ped.ped_speed,
+            "ped_ttc":ped.acc_ttc_gap,
 
             "is_collision": False,
             "min_distance": float("inf"),
