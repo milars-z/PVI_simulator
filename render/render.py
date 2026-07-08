@@ -1,15 +1,17 @@
 # render/render.py
 
-from typing import Any
-
 import pygame
 
 from agents.agent_enums import AgentType
-from render.render_config import RENDER_CONFIG
+from agents.ped_agent import PedestrianAgent
+from agents.veh_agent import VehicleAgent
+from configs.render_config import RENDER_CONFIG
+from configs.world_config import CrossRoadConfig
+from world.world import SimulationAgent, World
 
 
 class Render:
-    def __init__(self, world: Any) -> None:
+    def __init__(self, world: World) -> None:
         pygame.init()
 
         self.world = world
@@ -108,7 +110,7 @@ class Render:
     def _render_cross_road_blocks(
         self,
         target_surface: pygame.Surface,
-        cross_road: dict,
+        cross_road: CrossRoadConfig,
     ) -> None:
         block_length_m = self.config["cross_road_mark"]["block_length_m"]
         gap_length_m = self.config["cross_road_mark"]["gap_length_m"]
@@ -143,7 +145,7 @@ class Render:
             elif self._is_veh(agent):
                 self._render_veh(target_surface, agent)
 
-    def _render_ped(self, target_surface: pygame.Surface, ped: Any) -> None:
+    def _render_ped(self, target_surface: pygame.Surface, ped: PedestrianAgent) -> None:
         pos_x = getattr(ped, "pos_x")
         pos_y = getattr(ped, "pos_y")
 
@@ -170,7 +172,7 @@ class Render:
             width=1,
         )
 
-    def _render_veh(self, target_surface: pygame.Surface, veh: Any) -> None:
+    def _render_veh(self, target_surface: pygame.Surface, veh: VehicleAgent) -> None:
         pos_x = getattr(veh, "pos_x")
         pos_y = getattr(veh, "pos_y")
 
@@ -281,8 +283,8 @@ class Render:
 
         return value
 
-    def _is_ped(self, agent: Any) -> bool:
+    def _is_ped(self, agent: SimulationAgent) -> bool:
         return getattr(agent, "type", None) == AgentType.PEDESTRIAN
 
-    def _is_veh(self, agent: Any) -> bool:
+    def _is_veh(self, agent: SimulationAgent) -> bool:
         return getattr(agent, "type", None) == AgentType.VEHICLE

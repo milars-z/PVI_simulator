@@ -1,7 +1,6 @@
 # agents/base_agent.py
 
-import math
-from .agent_enums import ORIENTATION_ANGLE, Orientation, AgentType
+from .agent_enums import Orientation, AgentType
 
 
 class BaseAgent:
@@ -28,9 +27,3 @@ class BaseAgent:
 
         self.speed = speed
         self.orientation = orientation
-
-    def update(self, dt: float) -> None:
-        angle = ORIENTATION_ANGLE[self.orientation]
-
-        self.pos_x += self.speed * math.cos(angle) * dt
-        self.pos_y += self.speed * math.sin(angle) * dt

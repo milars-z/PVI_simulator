@@ -1,0 +1,8 @@
+epoch_id,round_id,veh_id,veh_spawn_x,veh_spawn_y,veh_init_speed,ped_id,ped_type,ped_speed,is_collision,min_distance,veh_speed_at_min_distance,max_abs_jerk,max_deceleration,veh_mean_speed,interaction_time,is_yield_to_ped,veh_final_speed
+0,0,0,50.0,2.0,16.667,0,default,0.843,False,0.561,16.667,0.0,0.0,9.595,8.327,False,0.0
+0,1,1,50.0,2.0,15.278,1,default,1.375,True,0.0,15.278,0.0,0.0,15.159,5.268,False,0.0
+0,2,2,50.0,2.0,13.889,2,default,1.448,True,0.0,13.889,0.0,0.0,12.841,6.005,False,0.0
+0,3,3,50.0,2.0,12.5,3,default,1.992,False,0.774,12.5,0.0,0.0,12.42,6.402,True,0.0
+0,4,4,50.0,2.0,11.111,4,default,0.889,True,0.0,11.111,0.0,0.0,10.088,7.91,False,0.0
+0,5,5,50.0,2.0,9.722,5,default,1.268,False,0.799,9.722,0.0,0.0,9.674,8.235,False,0.0
+0,0,0,50.0,2.0,16.667,0,default,0.843,False,0.547,16.667,0.0,0.0,9.535,8.32,False,0.0

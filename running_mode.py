@@ -1,6 +1,7 @@
 # main.py
 
 import pygame
+from typing import TypedDict
 
 from world.world import World
 from render.render import Render
@@ -8,7 +9,7 @@ from render.render import Render
 from observations.ped_observation import PedestrianObservation
 from observations.veh_observation import VehicleObservation
 
-from controllers.controller_manager import ControllerManager
+from controllers.controller_manager import ControllerManager, SimulationObservations
 from scenario.scenario_manager import ScenarioManager
 from records.recorder import Recorder
 
@@ -20,10 +21,17 @@ from records.recorder import Recorder
 FPS = 25
 TRAIN_DT = 1.0 / FPS
 
-ENABLE_RECORD = False
+
+class SimulationComponents(TypedDict):
+    world: World
+    recorder: Recorder
+    controller: ControllerManager
+    scenario_manager: ScenarioManager
+    ped_observer: PedestrianObservation
+    veh_observer: VehicleObservation
 
 
-def build_simulation():
+def build_simulation() -> SimulationComponents:
     """
     构建仿真所需对象。
 
@@ -72,13 +80,12 @@ def simulation_step(
     scenario_manager.update()
 
     if scenario_manager.is_finished():
-        controller.save_q_table()
         return False
 
     ped_obs_list = ped_observer.update(world)
     veh_obs_list = veh_observer.update(world)
 
-    observations = {
+    observations: SimulationObservations = {
         "pedestrian": ped_obs_list,
         "vehicle": veh_obs_list,
     }
@@ -89,8 +96,7 @@ def simulation_step(
         observations=observations,
     )
 
-    if ENABLE_RECORD:
-        recorder.record(world)
+    recorder.record(world, dt=dt)
 
     return True
 

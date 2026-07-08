@@ -1,56 +1,68 @@
-# records/recorder.py
-
 from __future__ import annotations
 
 import csv
 from pathlib import Path
-from typing import Any
 
-from configs.recorder_config import RECORDER_CONFIG
-from records.recorder_fun import RecorderFun
+from agents.ped_agent import PedestrianAgent
+from agents.veh_agent import VehicleAgent
+from configs.recorder_config import RECORDER_CONFIG, RecorderConfig
+from records.recorder_fun import RecorderFun, RecorderValue
+from world.world import World
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+# Record content definition.
+# Add, remove, or reorder CSV columns here.
+RECORD_FIELDS: list[str] = [
+    "epoch_id",
+    "round_id",
+    "veh_id",
+    "veh_spawn_x",
+    "veh_spawn_y",
+    "veh_init_speed",
+    "ped_id",
+    "ped_type",
+    "ped_speed",
+    "is_collision",
+    "min_distance",
+    "veh_speed_at_min_distance",
+    "max_abs_jerk",
+    "max_deceleration",
+    "veh_mean_speed",
+    "interaction_time",
+    "is_yield_to_ped",
+    "veh_final_speed",
+]
+
+FormattedRecorderValue = bool | int | float | str | None
 
 
 class Recorder:
-    """
-    pygame画面渲染
-    """
-
     def __init__(self) -> None:
-        self.config = RECORDER_CONFIG
-
-        self.csv_path = Path(self.config["csv_path"])
-        self.fieldnames = self.config["fieldnames"]
-        self.round_digits = self.config["round_digits"]
+        self.config: RecorderConfig = RECORDER_CONFIG
+        self.enabled = self.config["enabled"]
+        self.output_dir = self._build_output_dir()
+        self.csv_path = self.output_dir / str(self.config["csv_filename"])
+        self.round_digits = int(self.config["round_digits"])
+        self.fieldnames = RECORD_FIELDS
 
         self.fun = RecorderFun()
-
         self.current_epoch_id: int | None = None
         self.current_round_id: int | None = None
-
         self.is_active = False
         self.is_written = False
+        self.current_row: dict[str, RecorderValue] = {}
 
-        self.current_row: dict[str, Any] = {}
-
-        self._init_csv()
-
-    # --------------------------------------------------
-    # public API
-    # --------------------------------------------------
+        self._init_output()
 
     def record(
         self,
-        world: Any,
+        world: World,
+        dt: float = 0.0,
     ) -> None:
-        """
-        每一帧调用一次。
-
-        只更新当前 round 的过程指标。
-        不在这里写 CSV。
-        """
-
-        round_id = world.now_round
-        epoch_id = world.now_epoch
+        if not self.enabled:
+            return
 
         veh = self.fun.get_main_vehicle(world)
         ped = self.fun.get_main_pedestrian(world)
@@ -58,31 +70,26 @@ class Recorder:
         if veh is None or ped is None:
             return
 
-        if self._is_new_round(epoch_id, round_id):
+        if self._is_new_round(world.now_epoch, world.now_round):
             self._start_round(
                 veh=veh,
                 ped=ped,
-                epoch_id=epoch_id,
-                round_id=round_id,
+                epoch_id=world.now_epoch,
+                round_id=world.now_round,
             )
 
-        self._update_running_metrics(veh, ped)
+        self._update_running_metrics(veh=veh, ped=ped, dt=dt)
 
-        if self._is_round_finished(world):
+        if world.is_round_finished():
             self._write_round_result(veh)
 
     def finish_round(
         self,
-        world: Any,
+        world: World,
+        dt: float = 0.0,
     ) -> None:
-        """
-        每个 round 结束时，由外部显式调用一次。
-
-        这个函数负责写入一行 CSV。
-        """
-
-        round_id = world.now_round
-        epoch_id = world.now_epoch
+        if not self.enabled:
+            return
 
         veh = self.fun.get_main_vehicle(world)
         ped = self.fun.get_main_pedestrian(world)
@@ -90,20 +97,16 @@ class Recorder:
         if veh is None or ped is None:
             return
 
-        if self._is_new_round(epoch_id, round_id):
+        if self._is_new_round(world.now_epoch, world.now_round):
             self._start_round(
                 veh=veh,
                 ped=ped,
-                epoch_id=epoch_id,
-                round_id=round_id,
+                epoch_id=world.now_epoch,
+                round_id=world.now_round,
             )
 
-        self._update_running_metrics(veh, ped)
+        self._update_running_metrics(veh=veh, ped=ped, dt=dt)
         self._write_round_result(veh)
-
-    # --------------------------------------------------
-    # round lifecycle
-    # --------------------------------------------------
 
     def _is_new_round(
         self,
@@ -115,126 +118,99 @@ class Recorder:
             or self.current_round_id != round_id
         )
 
-    def _is_round_finished(self, world: Any) -> bool:
-        if not hasattr(world, "is_round_finished"):
-            return False
-
-        return world.is_round_finished()
-
     def _start_round(
         self,
-        veh: Any,
-        ped: Any,
+        veh: VehicleAgent,
+        ped: PedestrianAgent,
         epoch_id: int,
         round_id: int,
     ) -> None:
         self.current_epoch_id = epoch_id
         self.current_round_id = round_id
-
         self.is_active = True
         self.is_written = False
+        self.current_row = self.fun.build_initial_row(
+            veh=veh,
+            ped=ped,
+            epoch_id=epoch_id,
+            round_id=round_id,
+        )
 
-        self.current_row = {
-            "epoch_id": epoch_id,
-            "round_id": round_id,
-
-            "veh_id": veh.veh_id,
-            "veh_spawn_x": veh.distance_to_crossroad_m,
-            "veh_init_speed": veh.init_speed_mps,
-
-            "ped_id": ped.ped_id,
-            "ped_type": ped.ped_type,
-            "ped_speed": ped.ped_speed,
-            "ped_ttc":ped.acc_ttc_gap,
-
-            "is_collision": False,
-            "min_distance": float("inf"),
-            "veh_speed_at_min_distance": None,
-
-            # None 表示车还没到达人行道
-            # True / False 表示第一次到达人行道时是否礼让成功
-            "is_yield_to_ped": None,
-
-            "veh_final_speed": None,
-        }
-
-    def _update_running_metrics(self, veh: Any, ped: Any) -> None:
-        if not self.is_active:
+    def _update_running_metrics(
+        self,
+        veh: VehicleAgent,
+        ped: PedestrianAgent,
+        dt: float,
+    ) -> None:
+        if not self.is_active or self.is_written:
             return
 
-        if self.is_written:
+        self.fun.update_running_row(
+            row=self.current_row,
+            veh=veh,
+            ped=ped,
+            dt=dt,
+        )
+
+    def _write_round_result(self, veh: VehicleAgent) -> None:
+        if not self.is_active or self.is_written:
             return
 
-        current_distance = self.fun.calculate_center_distance(veh, ped)
-
-        if current_distance < self.current_row["min_distance"]:
-            self.current_row["min_distance"] = current_distance
-            self.current_row["veh_speed_at_min_distance"] = veh.speed
-
-        if self.fun.is_collision(veh, ped):
-            self.current_row["is_collision"] = True
-
-        # 只记录车辆第一次到达人行道时的礼让结果
-        if self.current_row["is_yield_to_ped"] is None:
-            if self.fun.has_vehicle_reached_crosswalk(veh):
-                self.current_row["is_yield_to_ped"] = self.fun.is_yield_to_ped(
-                    veh,
-                    ped,
-                )
-
-    def _write_round_result(self, veh: Any) -> None:
-        if not self.is_active:
-            return
-
-        if self.is_written:
-            return
-
-        self.current_row["veh_final_speed"] = veh.speed
-
-        if self.current_row["is_yield_to_ped"] is None:
-            self.current_row["is_yield_to_ped"] = False
-
-        row = self._format_row(self.current_row)
-        self._append_row(row)
-
+        self.fun.finish_row(row=self.current_row, veh=veh)
+        self._append_row(self._format_row(self.current_row))
         self.is_written = True
         self.is_active = False
 
-    # --------------------------------------------------
-    # csv
-    # --------------------------------------------------
+    def _init_output(self) -> None:
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def _init_csv(self) -> None:
-        self.csv_path.parent.mkdir(parents=True, exist_ok=True)
-
-        if self.csv_path.exists():
+        if self.csv_path.exists() and self._has_current_header():
             return
 
         with self.csv_path.open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=self.fieldnames)
             writer.writeheader()
 
-    def _append_row(self, row: dict[str, Any]) -> None:
+    def _has_current_header(self) -> bool:
+        with self.csv_path.open("r", newline="", encoding="utf-8") as f:
+            reader = csv.reader(f)
+            header = next(reader, None)
+
+        return header == self.fieldnames
+
+    def _append_row(self, row: dict[str, FormattedRecorderValue]) -> None:
+        self._init_output()
+
         with self.csv_path.open("a", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=self.fieldnames)
             writer.writerow(row)
 
-    # --------------------------------------------------
-    # utils
-    # --------------------------------------------------
+    def _build_output_dir(self) -> Path:
+        output_dir = Path(self.config["output_dir"])
 
-    def _format_row(self, row: dict[str, Any]) -> dict[str, Any]:
-        formatted = {}
+        if output_dir.is_absolute():
+            return output_dir
+
+        return PROJECT_ROOT / output_dir
+
+    def _format_row(
+        self,
+        row: dict[str, RecorderValue],
+    ) -> dict[str, FormattedRecorderValue]:
+        formatted: dict[str, FormattedRecorderValue] = {}
 
         for key in self.fieldnames:
             value = row.get(key)
 
             if isinstance(value, float):
-                if value == float("inf"):
-                    formatted[key] = "inf"
-                else:
-                    formatted[key] = round(value, self.round_digits)
+                formatted[key] = self._format_float(value)
             else:
                 formatted[key] = value
 
         return formatted
+
+    def _format_float(self, value: float) -> float | str:
+        if value == float("inf"):
+            return "inf"
+
+        return round(value, self.round_digits)

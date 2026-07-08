@@ -1,14 +1,18 @@
-# agents/ped_agent.py
+from __future__ import annotations
 
 import random
+from typing import TYPE_CHECKING
 
+from agents.agent_enums import AgentType, Orientation
 from agents.base_agent import BaseAgent
-from agents.agent_enums import AgentType, Orientation, PedStage
 from configs.pedestrian_config import (
     PED_BASIC_CONFIG,
     PED_DEFAULT_CHARA_CONFIG,
     PED_TYPE_CHARA_CONFIG,
 )
+
+if TYPE_CHECKING:
+    from world.world import World
 
 
 class PedestrianAgent(BaseAgent):
@@ -23,7 +27,7 @@ class PedestrianAgent(BaseAgent):
             spawn_y=0.0,
             size_x=0.0,
             size_y=0.0,
-            speed=0.0, # 行人的实际速度，会因为状态而改变
+            speed=0.0,
             orientation=Orientation.UP,
         )
 
@@ -34,42 +38,24 @@ class PedestrianAgent(BaseAgent):
         self.ped_type = ""
         self.chara_index = 0
 
-        self.ped_speed = 0.0 # 行人的特征速度，不会因为状态而改变
-        self.wait_time = 0.0
-
-        self.wait_line = 0.0
+        self.ped_speed = 0.0
         self.finish_line = 0.0
 
-        self.acc_ttc_gap = None
-        self.acc_stop_ratio = None
-        self.acc_speed = None
+        self.is_pass = False
 
-        self.cross_probability = 1.0
-        self.focus_probability = 1.0
-        self.is_pass = True
-
-        self.stage = PedStage.INIT
-
-    def init_ped(self, world) -> "PedestrianAgent":
+    def init_ped(self, world: "World") -> "PedestrianAgent":
         self._init_basic_para(world)
         self._init_chara_para()
         self._init_random_para()
 
         return self
 
-    def _init_basic_para(self, world) -> None:
+    def _init_basic_para(self, world: "World") -> None:
         ped_spawn_config = world.get_ped_init_config()
-        # "spawn_x"
-        # "spawn_y"
-        # "random_radius" 暂时未使用
-        # "orientation"
-        # "wait_line"
-        # "finish_line"
 
         self.spawn_x = ped_spawn_config["spawn_x"]
         self.spawn_y = ped_spawn_config["spawn_y"]
-        self.wait_line = ped_spawn_config["wait_line"]  #等待坐标，由world配置
-        self.finish_line = ped_spawn_config["finish_line"]  #结束坐标，由world配置
+        self.finish_line = ped_spawn_config["finish_line"]
 
         self.pos_x = self.spawn_x
         self.pos_y = self.spawn_y
@@ -78,10 +64,6 @@ class PedestrianAgent(BaseAgent):
 
         self.size_x = PED_BASIC_CONFIG["size_x"]
         self.size_y = PED_BASIC_CONFIG["size_y"]
-
-        self.cross_probability = PED_BASIC_CONFIG["cross_probability"]
-        self.focus_probability = PED_BASIC_CONFIG["focus_probability"]
-        self.is_pass = PED_BASIC_CONFIG["is_pass"]
 
         type_list = PED_BASIC_CONFIG["type_list"]
         self.ped_type_id = self.ped_id % len(type_list)
@@ -129,30 +111,3 @@ class PedestrianAgent(BaseAgent):
 
     def _load_default_chara_para(self) -> None:
         self.ped_speed = PED_DEFAULT_CHARA_CONFIG["ped_speed"]
-
-        self.acc_ttc_gap = PED_DEFAULT_CHARA_CONFIG["acc_ttc_gap"]
-        self.acc_stop_ratio = PED_DEFAULT_CHARA_CONFIG["acc_stop_ratio"]
-        self.acc_speed = PED_DEFAULT_CHARA_CONFIG["acc_speed"]
-
-        self.cross_probability = PED_DEFAULT_CHARA_CONFIG["cross_probability"]
-        self.focus_probability = PED_DEFAULT_CHARA_CONFIG["focus_probability"]
-        self.is_pass = PED_DEFAULT_CHARA_CONFIG["is_pass"]
-
-    def update(self, dt: float) -> None:
-        if self.stage == PedStage.INIT:
-            super().update(dt)
-
-        elif self.stage == PedStage.WAIT:
-            self.wait_time += dt
-
-        elif self.stage == PedStage.CROSS:
-            super().update(dt)
-
-        elif self.stage == PedStage.DANGEROUS:
-            super().update(dt)
-
-        elif self.stage == PedStage.FINISH:
-            pass
-
-    def is_finished(self) -> bool:
-        return self.stage == PedStage.FINISH

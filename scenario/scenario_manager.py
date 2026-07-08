@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List
-
 from world.world import World
 from agents.ped_agent import PedestrianAgent
 from agents.veh_agent import VehicleAgent
-from scenario.scenario_config import SCENARIO_CONFIG
+from configs.scenario_config import SCENARIO_CONFIG
 
 
 class ScenarioState(Enum):
@@ -167,13 +165,7 @@ class ScenarioManager:
 
         所有 ped 和所有 veh 都 finish，当前 round 结束。
         """
-        flag = True
-        
-        for agent in self.world.agent_list:
-
-            flag = flag * (agent.is_finished() == True)
-
-        return flag
+        return self.world.is_round_finished()
 
 
     def _build_round_seed(self) -> int:
@@ -186,7 +178,7 @@ class ScenarioManager:
 
         ped = PedestrianAgent(
             ped_id=self.next_id,
-            seed=self.seed,
+            seed=seed,
         )
 
         ped.init_ped(self.world)
@@ -197,7 +189,7 @@ class ScenarioManager:
 
         veh = VehicleAgent(
             veh_id=self.next_id,
-            seed=self.seed,
+            seed=seed,
         )
 
         veh.init_veh(self.world)

@@ -1,29 +1,24 @@
-# configs/recorder_config.py
+from __future__ import annotations
 
-RECORDER_CONFIG = {
-    "csv_path": "records/result/round_result.csv",
+from typing import TypedDict
 
+
+class RecorderConfig(TypedDict):
+    enabled: bool
+    output_dir: str
+    csv_filename: str
+    round_digits: int
+
+
+# Recorder settings.
+# - enabled: turn CSV recording on/off without changing the simulation loop.
+# - output_dir: folder created by Recorder during initialization. A relative
+#   path is resolved from the project root.
+# - csv_filename: result file created inside output_dir.
+# - round_digits: decimal places used when formatting float fields.
+RECORDER_CONFIG: RecorderConfig = {
+    "enabled": True,
+    "output_dir": "records/result",
+    "csv_filename": "round_result.csv",
     "round_digits": 3,
-
-    "fieldnames": [
-        "epoch_id",
-        "round_id",
-
-        "veh_id",
-        "veh_spawn_x",
-        "veh_spawn_y",
-        "veh_init_speed",
-
-        "ped_id",
-        "ped_type",
-        "ped_speed",
-        "ped_ttc",
-
-        "is_collision",
-        "min_distance",
-        "veh_speed_at_min_distance",
-
-        "is_yield_to_ped",
-        "veh_final_speed",
-    ],
 }

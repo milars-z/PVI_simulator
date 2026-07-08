@@ -1,96 +1,59 @@
-PED_BASIC_CONFIG = {
+from __future__ import annotations
+
+from typing import TypedDict
+
+
+class PedestrianBasicConfig(TypedDict):
+    size_x: float
+    size_y: float
+    type_list: list[str]
+
+
+class PedestrianDefaultCharaConfig(TypedDict):
+    ped_speed: float
+
+
+class PedestrianCharaParamConfig(TypedDict):
+    values: list[float]
+    noise_std: float | None
+
+
+class PedestrianTypeConfig(TypedDict):
+    params: dict[str, PedestrianCharaParamConfig]
+
+
+# Pedestrian physical parameters used by the simulator.
+# Behavior decision thresholds are intentionally not kept here.
+PED_BASIC_CONFIG: PedestrianBasicConfig = {
+    # Pedestrian rectangle size in world coordinates, meters.
     "size_x": 0.5,
     "size_y": 0.5,
 
-    "cross_probability": 1.0,
-    "focus_probability": 1.0,
-    "is_pass": True,
-
+    # Labels for scenario generation and recording. They do not imply any
+    # crossing decision logic in the simulator.
     "type_list": [
-        "aggressive_ttc",
-        # "aggressive_stopping_ratio",
-        # "caution_stopping",
-        # "less_interactive",
-        # "less_attention",
-        # "less_cross",
+        "default",
     ],
 }
 
 
-PED_DEFAULT_CHARA_CONFIG = {
+# Default values loaded before profile-specific overrides.
+PED_DEFAULT_CHARA_CONFIG: PedestrianDefaultCharaConfig = {
     "ped_speed": 1.3,
-
-    "acc_ttc_gap": None,
-    "acc_stop_ratio": None,
-    "acc_speed": None,
-
-    "cross_probability": 1.0,
-    "focus_probability": 1.0,
-    "is_pass": True,
 }
 
 
-PED_TYPE_CHARA_CONFIG = {
-    "aggressive_ttc": {
+# Pedestrian profile sweep values.
+# The current controller reads ped.ped_speed and returns it as the fixed walking
+# command. No TTC, stopping-ratio, attention, or crossing-threshold logic is
+# configured here.
+PED_TYPE_CHARA_CONFIG: dict[str, PedestrianTypeConfig] = {
+    "default": {
         "params": {
-            "acc_ttc_gap": {
-                "values": [0.5, 1.2, 1.5 ,2.0, 3.0 ],
-                "noise_std": 0.2,
-            },
             "ped_speed": {
-                "values": [0.85,1.3,1.5,2.0],
+                "values": [0.85, 1.3, 1.5, 2.0],
                 "noise_std": 0.05,
             },
         },
     },
-
-    # "aggressive_stopping_ratio": {
-    #     "params": {
-    #         "acc_stop_ratio": {
-    #             "values": [0.9, 1.0, 1.1],
-    #             "noise_std": 0.03,
-    #         },
-    #         "ped_speed": {
-    #             "values": [0.85,1.3,1.5],
-    #             "noise_std": 0.05,
-    #         },
-    #     },
-    # },
-
-    # "caution_stopping": {
-    #     "params": {
-    #         "acc_speed": {
-    #             "values": [0.3, 0.5, 0.8],
-    #             "noise_std": 0.05,
-    #         },
-    #         "ped_speed": {
-    #             "values": [0.85,1.3,1.5],
-    #             "noise_std": 0.05,
-    #         },
-    #     },
-    # },
-
-    # "less_interactive": {
-    #     "params": {
-    #         "ped_speed": {
-    #             "values": [0.85,1.3,1.5],
-    #             "noise_std": 0.05,
-    #         },
-    #     },
-    # },
-
-    # "less_attention": {
-    #     "params": {
-    #         "ped_speed": {
-    #             "values": [0.85,1.3,1.5],
-    #             "noise_std": 0.05,
-    #         },
-    #     },
-    # },
-
-    # "less_cross": {
-    #     "params": {
-    #         ## none
-    #     },
-    # },
 }
